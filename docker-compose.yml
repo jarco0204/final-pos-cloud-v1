@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   api:
     build: .
@@ -8,6 +7,10 @@ services:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017/nestjs-db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
 
   mongo:
     image: mongo:4.4

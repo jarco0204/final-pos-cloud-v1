@@ -20,7 +20,9 @@ import { ShoppingCartController } from './modules/shopping-cart/shopping-cart.co
       rootPath: join(__dirname, '..', 'public'),
     }),
     // MongooseModule: Connect to a MongoDB database
-    MongooseModule.forRoot('mongodb://localhost/nestjs-db', {}),
+    MongooseModule.forRoot(
+      process.env.MONGODB_URI || 'mongodb://mongo:27017/nestjs-db',
+    ),
   ],
   providers: [AppService, ShoppingCartService],
   controllers: [AppController, ShoppingCartController],

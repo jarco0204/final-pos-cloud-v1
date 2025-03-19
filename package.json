@@ -1,8 +1,8 @@
 {
-  "name": "final-pos-client-v1",
-  "version": "0.0.1",
+  "name": "final-pos-cloud-v1",
+  "version": "0.1.0",
   "description": "",
-  "author": "",
+  "author": "jarco0204",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
