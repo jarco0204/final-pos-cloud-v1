@@ -5,24 +5,17 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - db
+      - mongo
     environment:
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
-      - DATABASE_USER=your_db_user
-      - DATABASE_PASSWORD=your_db_password
-      - DATABASE_NAME=your_db_name
-#   db:
-#     image: postgres:13-alpine
-#     restart: always
-#     environment:
-#       POSTGRES_USER: your_db_user
-#       POSTGRES_PASSWORD: your_db_password
-#       POSTGRES_DB: your_db_name
-#     ports:
-#       - '5432:5432'
-#     volumes:
-#       - pgdata:/var/lib/postgresql/data
+      - MONGODB_URI=mongodb://mongo:27017/nestjs-db
 
-# volumes:
-#   pgdata:
+  mongo:
+    image: mongo:4.4
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
