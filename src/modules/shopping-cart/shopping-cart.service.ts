@@ -110,22 +110,22 @@ export class ShoppingCartService {
     const productObjectId = new Types.ObjectId(productId);
     // Find the product and determine how many units are being removed
     const item = cart.items.find(
-      (item) => item.product.toString() === productObjectId.toString(),
+      (item) => item.product._id.toString() === productObjectId.toString(),
     );
     if (!item) {
       throw new NotFoundException(
         `Product with id ${productId} not found in the cart`,
       );
     }
-    const removedQuantity = item.quantity;
-    cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productObjectId.toString(),
-    );
+
     // Emit an event indicating that units are being removed (stock should be increased)
     this.eventEmitter.emit('cart.product.removed', {
       productId: productObjectId.toString(),
-      quantity: removedQuantity,
+      quantity: item.quantity,
     });
+
+    // Remove the product from the cart
+    cart.items.splice(cart.items.indexOf(item), 1);
     return cart.save();
   }
 
