@@ -39,3 +39,7 @@
     - docker-compose.yaml file for starting additional services and backend app
 - Tests for the NestJS application, covering main functions (optional)
 - Git repository with proper gitflow and conventional commit messages
+
+### NEST.JS Learning 
+- For a typical CRUD feature, one needs a dedicated module, controller, and service.
+- You can use generate command in CLI 
