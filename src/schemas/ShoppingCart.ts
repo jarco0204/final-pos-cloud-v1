@@ -1,5 +1,5 @@
 import { Schema as MongooseSchema } from 'mongoose';
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 // Local Imports
 import { Product } from './Product';

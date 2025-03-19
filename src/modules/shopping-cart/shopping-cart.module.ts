@@ -8,7 +8,6 @@ import { ShoppingCart, ShoppingCartSchema } from 'src/schemas/ShoppingCart';
 
 @Module({
   imports: [
-    // MongooseModule: Connect to a MongoDB database
     MongooseModule.forFeature([
       { name: ShoppingCart.name, schema: ShoppingCartSchema },
     ]),
