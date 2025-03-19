@@ -1,4 +1,19 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 
-@Module({})
+// Local Imports
+import { ShoppingCartService } from './shopping-cart.service';
+import { ShoppingCartController } from './shopping-cart.controller';
+import { ShoppingCart, ShoppingCartSchema } from 'src/schemas/ShoppingCart';
+
+@Module({
+  imports: [
+    // MongooseModule: Connect to a MongoDB database
+    MongooseModule.forFeature([
+      { name: ShoppingCart.name, schema: ShoppingCartSchema },
+    ]),
+  ],
+  controllers: [ShoppingCartController],
+  providers: [ShoppingCartService],
+})
 export class ShoppingCartModule {}
