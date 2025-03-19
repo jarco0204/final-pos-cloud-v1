@@ -20,10 +20,6 @@ export class CreateProductDto {
   description?: string;
 
   @IsNotEmpty()
-  @IsString()
-  image: string; // Use additional checks if needed for Base64 format
-
-  @IsNotEmpty()
   @IsNumber()
   price: number;
 

@@ -1,50 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { Product } from 'src/schemas/Product';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Injectable, NotFoundException } from '@nestjs/common';
+
+// Local Imports
+import { Product, ProductDocument } from 'src/schemas/Product';
+import { CreateProductDto } from './validators/create-product-dto';
+import { UpdateProductDto } from './validators/update-product-dto';
 
 @Injectable()
 export class ProductService {
-  // Class property to store products
-  private products = [
-    {
-      id: '1',
-      name: 'Product 1',
-      description: 'Description of product 1',
-      price: 100,
-      stock: 10,
-    },
-    {
-      id: '2',
-      name: 'Product 2',
-      description: 'Description of product 2',
-      price: 200,
-      stock: 20,
-    },
-  ];
+  constructor(
+    @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+  ) {}
 
-  // Getter for products
-  getProducts() {
-    return this.products;
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    const createdProduct = new this.productModel(createProductDto);
+    return createdProduct.save();
   }
 
-  // Overloaded getter for products using id
-  getProduct(id: string) {
-    return this.products.find((product) => product.id === id);
+  async findOne(id: string): Promise<Product> {
+    const product = await this.productModel.findById(id).exec();
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    return product;
   }
 
-  // TODO: Implement Create Product
-  createProduct() {}
+  async findAll(): Promise<Product[]> {
+    return this.productModel.find().exec();
+  }
 
-  // Method to replace product object in array
-  // updateProduct(id: string, product: Product) {
-  //   const index = this.products.findIndex((product) => product.id === id);
-  //   this.products[index] = product;
-  //   return product;
-  // }
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    const updatedProduct = await this.productModel
+      .findByIdAndUpdate(id, updateProductDto, { new: true })
+      .exec();
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    return updatedProduct;
+  }
 
-  // Method to delete product object from array
-  deleteProduct(id: string) {
-    const index = this.products.findIndex((product) => product.id === id);
-    this.products.splice(index, 1);
-    return id;
+  async delete(id: string): Promise<Product> {
+    const deletedProduct = await this.productModel.findByIdAndDelete(id).exec();
+    if (!deletedProduct) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    return deletedProduct;
   }
 }
