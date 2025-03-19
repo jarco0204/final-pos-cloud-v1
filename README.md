@@ -23,6 +23,8 @@
 - `Root -> (Product & (Order -> Cart and Payment))`
 - Since Every Cart will Be Associated with a Payment Record, We Decided to add another module called Order to act as a Parent Node for both Cart and Payment
 
+- Event-Driven Communication to follow Pub/Sub Pattern to decouple Shopping Cart and Product
+
 ### Specific Backend Requirements
 
 - CRUD manipulation for products with the following schema:
