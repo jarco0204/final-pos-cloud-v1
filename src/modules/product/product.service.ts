@@ -1,5 +1,6 @@
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 // Local Imports
@@ -12,6 +13,24 @@ export class ProductService {
   constructor(
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
   ) {}
+
+  // Listener for when products are added to the cart
+  @OnEvent('cart.product.added')
+  async handleProductAdded(payload: { productId: string; quantity: number }) {
+    // Decrement the product stock by the quantity added to the cart
+    await this.productModel.findByIdAndUpdate(payload.productId, {
+      $inc: { stock: -payload.quantity },
+    });
+  }
+
+  // Listener for when products are removed from the cart
+  @OnEvent('cart.product.removed')
+  async handleProductRemoved(payload: { productId: string; quantity: number }) {
+    // Increment the product stock by the quantity removed from the cart
+    await this.productModel.findByIdAndUpdate(payload.productId, {
+      $inc: { stock: payload.quantity },
+    });
+  }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const createdProduct = new this.productModel(createProductDto);

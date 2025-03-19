@@ -1,5 +1,6 @@
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 // Local Imports
@@ -11,6 +12,7 @@ export class ShoppingCartService {
   constructor(
     @InjectModel(ShoppingCart.name)
     private cartModel: Model<ShoppingCartDocument>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // Create a new shopping cart
@@ -44,10 +46,18 @@ export class ShoppingCartService {
     if (existingIndex !== -1) {
       // Increase the quantity
       cart.items[existingIndex].quantity += cartItemDto.quantity;
+      this.eventEmitter.emit('cart.product.added', {
+        productId: productObjectId.toString(),
+        quantity: cartItemDto.quantity,
+      });
     } else {
       // Add new product to cart
       cart.items.push({
         product: productObjectId,
+        quantity: cartItemDto.quantity,
+      });
+      this.eventEmitter.emit('cart.product.added', {
+        productId: productObjectId.toString(),
         quantity: cartItemDto.quantity,
       });
     }
@@ -70,6 +80,23 @@ export class ShoppingCartService {
         `Product with id ${cartItemDto.product} not found in the cart`,
       );
     }
+
+    // Emit the event to update the product quantity
+    const currentQuantity = cart.items[index].quantity;
+    const newQuantity = cartItemDto.quantity;
+    const quantityDifference = newQuantity - currentQuantity;
+    if (quantityDifference > 0) {
+      this.eventEmitter.emit('cart.product.added', {
+        productId: productObjectId.toString(),
+        quantity: quantityDifference,
+      });
+    } else if (quantityDifference < 0) {
+      this.eventEmitter.emit('cart.product.removed', {
+        productId: productObjectId.toString(),
+        quantity: Math.abs(quantityDifference),
+      });
+    }
+
     cart.items[index].quantity = cartItemDto.quantity;
     return cart.save();
   }
@@ -81,9 +108,24 @@ export class ShoppingCartService {
   ): Promise<ShoppingCartDocument> {
     const cart = await this.getCart(cartId);
     const productObjectId = new Types.ObjectId(productId);
-    cart.items = cart.items.filter(
-      (item) => item.product._id.toString() !== productObjectId.toString(),
+    // Find the product and determine how many units are being removed
+    const item = cart.items.find(
+      (item) => item.product.toString() === productObjectId.toString(),
     );
+    if (!item) {
+      throw new NotFoundException(
+        `Product with id ${productId} not found in the cart`,
+      );
+    }
+    const removedQuantity = item.quantity;
+    cart.items = cart.items.filter(
+      (item) => item.product.toString() !== productObjectId.toString(),
+    );
+    // Emit an event indicating that units are being removed (stock should be increased)
+    this.eventEmitter.emit('cart.product.removed', {
+      productId: productObjectId.toString(),
+      quantity: removedQuantity,
+    });
     return cart.save();
   }
 
@@ -93,6 +135,14 @@ export class ShoppingCartService {
     if (!cart) {
       throw new NotFoundException(`Cart with id ${cartId} not found`);
     }
+
+    // Emit an event for each product in the cart
+    cart.items.forEach((item) => {
+      this.eventEmitter.emit('cart.product.removed', {
+        productId: item.product.toString(),
+        quantity: item.quantity,
+      });
+    });
     return cart;
   }
 }
