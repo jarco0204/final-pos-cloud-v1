@@ -1,13 +1,11 @@
-import { Schema as MongooseSchema } from 'mongoose';
+import { Document, Types, Schema as MongooseSchema } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-
-// Local Imports
 import { Product } from './Product';
 
 @Schema()
 export class CartItem {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Product', required: true })
-  product: MongooseSchema.Types.ObjectId;
+  product: Types.ObjectId;
 
   @Prop({ required: true, min: 1 })
   quantity: number;
@@ -22,8 +20,3 @@ export class ShoppingCart {
 
 export type ShoppingCartDocument = ShoppingCart & Document;
 export const ShoppingCartSchema = SchemaFactory.createForClass(ShoppingCart);
-
-export interface ShoppingCartObject {
-  id: string;
-  products: Product[];
-}
