@@ -4,7 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 // Local Imports
 import { ShoppingCart, ShoppingCartDocument } from '../../schemas/ShoppingCart';
-import { CartItemDto } from './validators/update-shopping-cart.dto';
+import { CartItemDto } from './validators/create-shopping-cart-item.dto';
 
 @Injectable()
 export class ShoppingCartService {

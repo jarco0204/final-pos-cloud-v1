@@ -12,7 +12,7 @@
 - @nestjs/swagger swagger-ui-express
 - @nestjs/mongoose mongoose
 - @nestjs/serve-static
-- class-validator
+- class-validator & class-transformer 
 
 ### General Task Instructions 👑
 

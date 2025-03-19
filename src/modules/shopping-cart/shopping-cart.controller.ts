@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ShoppingCartService } from './shopping-cart.service';
-import { CartItemDto } from './validators/update-shopping-cart.dto';
+import { CartItemDto } from './validators/create-shopping-cart-item.dto';
 
 @ApiTags('shopping-cart')
 @Controller('shopping-cart')
