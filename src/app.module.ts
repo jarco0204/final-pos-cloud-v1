@@ -28,7 +28,7 @@ import { ShoppingCartController } from './modules/shopping-cart/shopping-cart.co
       process.env.MONGODB_URI || 'mongodb://mongo:27017/nestjs-db',
     ),
   ],
-  providers: [AppService, ShoppingCartService],
-  controllers: [AppController, ShoppingCartController],
+  providers: [AppService],
+  controllers: [AppController],
 })
 export class AppModule {}

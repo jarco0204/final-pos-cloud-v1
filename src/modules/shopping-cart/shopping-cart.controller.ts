@@ -10,7 +10,6 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { ShoppingCartService } from './shopping-cart.service';
 import { CartItemDto } from './validators/update-shopping-cart.dto';
-import { CreateCartDto } from './validators/create-shopping-cart.dto';
 
 @ApiTags('shopping-cart')
 @Controller('shopping-cart')
@@ -18,8 +17,8 @@ export class ShoppingCartController {
   constructor(private readonly cartService: ShoppingCartService) {}
 
   @Post()
-  async createCart(@Body() createCartDto: CreateCartDto) {
-    return this.cartService.createCart(createCartDto);
+  async createCart() {
+    return this.cartService.createCart();
   }
 
   @Get(':id')
@@ -27,12 +26,13 @@ export class ShoppingCartController {
     return this.cartService.getCart(id);
   }
 
+  // Add or update a product
   @Post(':id/product')
-  async addProduct(
+  async addOrUpdateProduct(
     @Param('id') cartId: string,
     @Body() cartItemDto: CartItemDto,
   ) {
-    return this.cartService.addProduct(cartId, cartItemDto);
+    return this.cartService.addOrUpdateProduct(cartId, cartItemDto);
   }
 
   @Put(':id/product')

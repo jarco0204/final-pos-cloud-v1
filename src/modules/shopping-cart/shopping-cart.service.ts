@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-base-to-string */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ShoppingCart, ShoppingCartDocument } from '../../schemas/ShoppingCart';
-import { CreateCartDto } from './validators/create-shopping-cart.dto';
 import { CartItemDto } from './validators/update-shopping-cart.dto';
 
 @Injectable()
@@ -14,10 +12,8 @@ export class ShoppingCartService {
   ) {}
 
   // Create a new shopping cart
-  async createCart(
-    createCartDto: CreateCartDto,
-  ): Promise<ShoppingCartDocument> {
-    const newCart = new this.cartModel(createCartDto);
+  async createCart(): Promise<ShoppingCartDocument> {
+    const newCart = new this.cartModel({ items: [] });
     return newCart.save();
   }
 
@@ -33,23 +29,21 @@ export class ShoppingCartService {
     return cart;
   }
 
-  // Add a product to the cart
-  async addProduct(
+  // Add or update a product in the cart
+  async addOrUpdateProduct(
     cartId: string,
     cartItemDto: CartItemDto,
   ): Promise<ShoppingCartDocument> {
     const cart = await this.getCart(cartId);
-    // Convert the product string to a Mongoose ObjectId
     const productObjectId = new Types.ObjectId(cartItemDto.product);
-    // Check if product already exists in the cart
-    const existingItem = cart.items.find(
+    const existingIndex = cart.items.findIndex(
       (item) => item.product.toString() === productObjectId.toString(),
     );
-    if (existingItem) {
+    if (existingIndex !== -1) {
       // Increase the quantity
-      existingItem.quantity += cartItemDto.quantity;
+      cart.items[existingIndex].quantity += cartItemDto.quantity;
     } else {
-      // Add new cart item
+      // Add new product to cart
       cart.items.push({
         product: productObjectId,
         quantity: cartItemDto.quantity,
@@ -58,22 +52,22 @@ export class ShoppingCartService {
     return cart.save();
   }
 
-  // Update quantity of a product in the cart
+  // Update the quantity of a product in the cart
   async updateProductQuantity(
     cartId: string,
     cartItemDto: CartItemDto,
   ): Promise<ShoppingCartDocument> {
     const cart = await this.getCart(cartId);
     const productObjectId = new Types.ObjectId(cartItemDto.product);
-    const itemIndex = cart.items.findIndex(
+    const index = cart.items.findIndex(
       (item) => item.product.toString() === productObjectId.toString(),
     );
-    if (itemIndex === -1) {
+    if (index === -1) {
       throw new NotFoundException(
         `Product with id ${cartItemDto.product} not found in the cart`,
       );
     }
-    cart.items[itemIndex].quantity = cartItemDto.quantity;
+    cart.items[index].quantity = cartItemDto.quantity;
     return cart.save();
   }
 
@@ -90,7 +84,7 @@ export class ShoppingCartService {
     return cart.save();
   }
 
-  // Delete the entire shopping cart
+  // Delete the entire cart
   async deleteCart(cartId: string): Promise<ShoppingCartDocument> {
     const cart = await this.cartModel.findByIdAndDelete(cartId).exec();
     if (!cart) {
