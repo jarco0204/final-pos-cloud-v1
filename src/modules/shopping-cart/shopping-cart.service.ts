@@ -82,7 +82,7 @@ export class ShoppingCartService {
     const cart = await this.getCart(cartId);
     const productObjectId = new Types.ObjectId(productId);
     cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productObjectId.toString(),
+      (item) => item.product._id.toString() !== productObjectId.toString(),
     );
     return cart.save();
   }
