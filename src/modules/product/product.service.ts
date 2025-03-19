@@ -35,11 +35,11 @@ export class ProductService {
   createProduct() {}
 
   // Method to replace product object in array
-  updateProduct(id: string, product: Product) {
-    const index = this.products.findIndex((product) => product.id === id);
-    this.products[index] = product;
-    return product;
-  }
+  // updateProduct(id: string, product: Product) {
+  //   const index = this.products.findIndex((product) => product.id === id);
+  //   this.products[index] = product;
+  //   return product;
+  // }
 
   // Method to delete product object from array
   deleteProduct(id: string) {
