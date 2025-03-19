@@ -1,10 +1,23 @@
-import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+// Configuration
+const config = new DocumentBuilder()
+  .setTitle('FinalPOS: Shop and Cart API')
+  .setDescription(
+    'API documentation for backend coding task to create CRUD App for Shop and Cart',
+  )
+  .setVersion('1.1.1')
+  .build();
 
 const PORT = process.env.PORT ?? 3000;
 
+// Start point of the application
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
   await app.listen(process.env.PORT ?? PORT);
 }
 

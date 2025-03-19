@@ -6,6 +6,7 @@
 
 ### Libraries
 - NestJS (Installed with npm install -g @nestjs/cli)
+- @nestjs/swagger swagger-ui-express                                
 
 ### General Task Instructions 👑
 - Use Git for Code Management with NestJS Code Conventions
