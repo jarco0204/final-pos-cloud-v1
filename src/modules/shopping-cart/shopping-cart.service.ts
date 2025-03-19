@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 // Local Imports
-import { ShoppingCart, ShoppingCartDocument } from '../../schemas/ShoppingCart';
 import { CartItemDto } from './validators/create-shopping-cart-item.dto';
+import { ShoppingCart, ShoppingCartDocument } from '../../schemas/ShoppingCart';
 
 @Injectable()
 export class ShoppingCartService {

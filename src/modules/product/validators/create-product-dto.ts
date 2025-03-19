@@ -38,10 +38,10 @@ export class CreateProductDto {
 
   @ApiProperty({
     description: 'Product Picture, Base64 Data, Less than 1MB',
-    required: false,
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   @MaxLength(1048576) // 1MB in bytes
-  image?: string;
+  image: string;
 }

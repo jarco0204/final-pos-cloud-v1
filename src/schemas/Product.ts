@@ -15,18 +15,8 @@ export class Product {
   @Prop({ required: true, min: 0 })
   stock: number;
 
-  @Prop({ required: false, maxlength: 1048576 }) // 1MB in bytes
-  image: string; // Expect a Base64 string (ensure size < 1MB in your validation)
-}
-
-// Interface for Product Object Used in Service
-export interface ProductObject {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-  description?: string;
-  image?: string;
+  @Prop({ required: true, maxlength: 1048576 }) // 1MB in bytes
+  image: string; // Expect a Base64 string
 }
 
 export type ProductDocument = Product & Document;
