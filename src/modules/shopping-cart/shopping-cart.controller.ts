@@ -40,6 +40,7 @@ export class ShoppingCartController {
     @Param('id') cartId: string,
     @Body() cartItemDto: CartItemDto,
   ) {
+    console.log('Your cart id is...', cartId, cartItemDto);
     return this.cartService.updateProductQuantity(cartId, cartItemDto);
   }
 

@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Injectable, NotFoundException } from '@nestjs/common';
+
+// Local Imports
 import { ShoppingCart, ShoppingCartDocument } from '../../schemas/ShoppingCart';
 import { CartItemDto } from './validators/update-shopping-cart.dto';
 
@@ -59,8 +61,9 @@ export class ShoppingCartService {
   ): Promise<ShoppingCartDocument> {
     const cart = await this.getCart(cartId);
     const productObjectId = new Types.ObjectId(cartItemDto.product);
+    console.log('Your cart items are...', cart.items);
     const index = cart.items.findIndex(
-      (item) => item.product.toString() === productObjectId.toString(),
+      (item) => item.product._id.toString() === productObjectId.toString(),
     );
     if (index === -1) {
       throw new NotFoundException(
