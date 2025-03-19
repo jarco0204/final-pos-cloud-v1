@@ -49,7 +49,7 @@
 - Database schema design ✅
 - Node.js application code based on NestJS framework ✅
 - Git repository with proper flow and conventional commit messages ✅
-- Swagger documentation
+- Swagger documentation ✅
 - Dockerfile for building the NestJS app container
 - docker-compose.yaml file for starting additional services and backend app
 - Tests for the NestJS application, covering main functions (optional)

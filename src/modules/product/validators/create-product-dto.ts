@@ -35,4 +35,13 @@ export class CreateProductDto {
   @IsNumber()
   @Min(0)
   stock: number;
+
+  @ApiProperty({
+    description: 'Product Picture, Base64 Data, Less than 1MB',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1048576) // 1MB in bytes
+  image?: string;
 }
