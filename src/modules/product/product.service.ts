@@ -17,10 +17,25 @@ export class ProductService {
   // Listener for when products are added to the cart
   @OnEvent('cart.product.added')
   async handleProductAdded(payload: { productId: string; quantity: number }) {
-    // Decrement the product stock by the quantity added to the cart
-    await this.productModel.findByIdAndUpdate(payload.productId, {
-      $inc: { stock: -payload.quantity },
-    });
+    try {
+      const product = await this.productModel
+        .findById(payload.productId)
+        .exec();
+      if (!product) {
+        throw new NotFoundException(
+          `Product with id ${payload.productId} not found`,
+        );
+      }
+      const newStock = product.stock - payload.quantity;
+      if (newStock < 0) {
+        throw new Error('Insufficient stock');
+      }
+      await this.productModel.findByIdAndUpdate(payload.productId, {
+        $inc: { stock: -payload.quantity },
+      });
+    } catch (error) {
+      console.error('Error updating product stock:', error);
+    }
   }
 
   // Listener for when products are removed from the cart
@@ -34,10 +49,6 @@ export class ProductService {
         throw new NotFoundException(
           `Product with id ${payload.productId} not found`,
         );
-      }
-      const newStock = product.stock + payload.quantity;
-      if (newStock < 0) {
-        throw new Error('Stock cannot be negative');
       }
       await this.productModel.findByIdAndUpdate(payload.productId, {
         $inc: { stock: payload.quantity },

@@ -40,7 +40,7 @@
 
 ### Further Notes
 
-- When Operating with the Cart, the stock for products should be updated correctly
+- When Operating with the Cart, the stock for products should be updated correctly ✅
   - Must Handle Edge Cases ✅
 - Modules should NOT depend on each other, meaning we must use Standalone Singletons ✅
 
