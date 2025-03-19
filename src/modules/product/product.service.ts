@@ -26,10 +26,25 @@ export class ProductService {
   // Listener for when products are removed from the cart
   @OnEvent('cart.product.removed')
   async handleProductRemoved(payload: { productId: string; quantity: number }) {
-    // Increment the product stock by the quantity removed from the cart
-    await this.productModel.findByIdAndUpdate(payload.productId, {
-      $inc: { stock: payload.quantity },
-    });
+    try {
+      const product = await this.productModel
+        .findById(payload.productId)
+        .exec();
+      if (!product) {
+        throw new NotFoundException(
+          `Product with id ${payload.productId} not found`,
+        );
+      }
+      const newStock = product.stock + payload.quantity;
+      if (newStock < 0) {
+        throw new Error('Stock cannot be negative');
+      }
+      await this.productModel.findByIdAndUpdate(payload.productId, {
+        $inc: { stock: payload.quantity },
+      });
+    } catch (error) {
+      console.error('Error updating product stock:', error);
+    }
   }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
