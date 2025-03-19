@@ -50,3 +50,6 @@
 - You can use generate command in CLI
 - Similarities with Angular since NestJS uses decorators, modules, controllers, and dependency injection. This design makes your backend architecture modular and maintainable.
 - Microservices  (createMicroservice) similar to HTTP Servers except they use different Transport Protocol
+- Decorators are special kind function that be attached to methods and other members
+    - Injectable indicates is a provider to use dependency injection and follow singleton pattern
+    
