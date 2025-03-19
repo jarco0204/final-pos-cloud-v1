@@ -6,7 +6,10 @@
 
 ### Libraries
 - NestJS (Installed with npm install -g @nestjs/cli)
-- @nestjs/swagger swagger-ui-express                                
+- @nestjs/swagger swagger-ui-express
+- @nestjs/mongoose mongoose
+- @nestjs/serve-static
+                            
 
 ### General Task Instructions 👑
 - Use Git for Code Management with NestJS Code Conventions
@@ -43,4 +46,5 @@
 
 ### NEST.JS Learning 
 - For a typical CRUD feature, one needs a dedicated module, controller, and service.
-- You can use generate command in CLI 
+- You can use generate command in CLI
+- Similarities with Angular since NestJS uses decorators, modules, controllers, and dependency injection. This design makes your backend architecture modular and maintainable.
