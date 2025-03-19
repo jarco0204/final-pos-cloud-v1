@@ -94,8 +94,21 @@ This project is a backend implementation of a shop and shopping cart system. It 
   - A `Dockerfile` is provided to containerize the NestJS application.
   - `docker-compose.yaml` orchestrates the application alongside MongoDB.
 - **CI/CD with GitHub Actions:**
-  - The GitHub Actions workflow builds the Docker images, spins up containers, waits for services using a `wait-for-it.sh` script, runs integration tests (via `npm run test:e2e`), and tears down the containers.
+  - The GitHub Actions workflow builds the Docker images, spins up containers, waits for services using a `wait.sh` script, runs integration tests (via `npm run test:e2e`), and tears down the containers.
   - This setup ensures that every commit and pull request is validated through automated tests.
+
+## Running the Application
+
+To run the application locally using Docker, follow these steps:
+
+1. **Build and Start the Containers:**
+
+   Open your terminal at the project root and run:
+
+   ```bash
+   docker-compose up --build
+
+   ```
 
 ## Future Enhancements
 
