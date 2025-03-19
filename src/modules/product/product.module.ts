@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 // Local Imports
 import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
-import { Product, ProductSchema } from '../../schemas/product.schema';
+import { Product, ProductSchema } from '../../schemas/Product';
 
 @Module({
   imports: [

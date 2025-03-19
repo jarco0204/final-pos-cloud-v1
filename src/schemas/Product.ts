@@ -20,5 +20,14 @@ export class Product {
   //   image: string; // Expect a Base64 string (ensure size < 1MB in your validation)
 }
 
+// Interface for Product Object Used in Service
+export interface ProductObject {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+}
+
 export type ProductDocument = Product & Document;
 export const ProductSchema = SchemaFactory.createForClass(Product);
