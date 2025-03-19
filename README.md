@@ -10,11 +10,12 @@
 - @nestjs/mongoose mongoose
 - @nestjs/serve-static
                             
-
 ### General Task Instructions 👑
-- Use Git for Code Management with NestJS Code Conventions
-- Design a multi-module application with ZERO Module Cohesion
-- Simple Shop and Shopping Cart Pages
+- Design a multi-module Shop and Shopping Cart application with ZERO Module Cohesion
+
+### Database Schema Design
+- `Root -> (Product & (Order -> Cart and Payment))`
+- Since Every Cart will Be Associated with a Payment Record, We Decided to add another module called Order to act as a Parent Node for both Cart and Payment
 
 ### Specific Backend Requirements
 - CRUD manipulation for products with the following schema:
@@ -36,15 +37,16 @@
 - Modules should NOT depend on each other, meaning we must use Standalone Singletons
 
 ### Deliverables
-- Database schema design
-- Node.js application code based on NestJS framework
+- Database schema design ✅
+- Node.js application code based on NestJS framework ✅
+- Git repository with proper flow and conventional commit messages ✅
 - Swagger documentation
 - Dockerfile for building the NestJS app container
-    - docker-compose.yaml file for starting additional services and backend app
+- docker-compose.yaml file for starting additional services and backend app
 - Tests for the NestJS application, covering main functions (optional)
-- Git repository with proper gitflow and conventional commit messages
 
 ### NEST.JS Learning 
 - For a typical CRUD feature, one needs a dedicated module, controller, and service.
 - You can use generate command in CLI
 - Similarities with Angular since NestJS uses decorators, modules, controllers, and dependency injection. This design makes your backend architecture modular and maintainable.
+- Microservices  (createMicroservice) similar to HTTP Servers except they use different Transport Protocol

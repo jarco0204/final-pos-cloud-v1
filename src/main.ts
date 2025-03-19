@@ -15,8 +15,8 @@ const PORT = process.env.PORT ?? 3000;
 
 // Start point of the application
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors(); // Enable CORS in your NestJS application
+  const app = await NestFactory.create(AppModule); // New NestJS HTTP Server
+  app.enableCors(); // Enable CORS
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
   await app.listen(process.env.PORT ?? PORT);
