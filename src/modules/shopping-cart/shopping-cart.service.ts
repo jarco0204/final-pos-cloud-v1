@@ -44,24 +44,46 @@ export class ShoppingCartService {
       (item) => item.product.toString() === productObjectId.toString(),
     );
     if (existingIndex !== -1) {
+      this.updateProductQuantityHelper(
+        productObjectId.toString(),
+        cartItemDto.quantity,
+      );
+
       // Increase the quantity
       cart.items[existingIndex].quantity += cartItemDto.quantity;
-      this.eventEmitter.emit('cart.product.added', {
-        productId: productObjectId.toString(),
-        quantity: cartItemDto.quantity,
-      });
     } else {
+      this.updateProductQuantityHelper(productObjectId.toString(), 1);
       // Add new product to cart
       cart.items.push({
         product: productObjectId,
         quantity: cartItemDto.quantity,
       });
-      this.eventEmitter.emit('cart.product.added', {
-        productId: productObjectId.toString(),
-        quantity: cartItemDto.quantity,
-      });
     }
     return cart.save();
+  }
+
+  // Helper Method to Reduce Code Duplication & Emit Add Event
+  updateProductQuantityHelper(productID: string, quantity: number) {
+    try {
+      this.eventEmitter.emit('cart.product.added', {
+        productID,
+        quantity,
+      });
+    } catch (error) {
+      console.log('Error in event emitter', error);
+    }
+  }
+
+  // Helper Method to Reduce Code Duplication & Emit Remove Event
+  updateProductQuantityRemoveHelper(productID: string, quantity: number) {
+    try {
+      this.eventEmitter.emit('cart.product.removed', {
+        productID,
+        quantity,
+      });
+    } catch (error) {
+      console.log('Error in event emitter', error);
+    }
   }
 
   // Update the quantity of a product in the cart
@@ -86,15 +108,15 @@ export class ShoppingCartService {
     const newQuantity = cartItemDto.quantity;
     const quantityDifference = newQuantity - currentQuantity;
     if (quantityDifference > 0) {
-      this.eventEmitter.emit('cart.product.added', {
-        productId: productObjectId.toString(),
-        quantity: quantityDifference,
-      });
+      this.updateProductQuantityHelper(
+        productObjectId.toString(),
+        quantityDifference,
+      );
     } else if (quantityDifference < 0) {
-      this.eventEmitter.emit('cart.product.removed', {
-        productId: productObjectId.toString(),
-        quantity: Math.abs(quantityDifference),
-      });
+      this.updateProductQuantityRemoveHelper(
+        productObjectId.toString(),
+        Math.abs(quantityDifference),
+      );
     }
 
     cart.items[index].quantity = cartItemDto.quantity;
@@ -119,10 +141,10 @@ export class ShoppingCartService {
     }
 
     // Emit an event indicating that units are being removed (stock should be increased)
-    this.eventEmitter.emit('cart.product.removed', {
-      productId: productObjectId.toString(),
-      quantity: item.quantity,
-    });
+    this.updateProductQuantityRemoveHelper(
+      productObjectId.toString(),
+      item.quantity,
+    );
 
     // Remove the product from the cart
     cart.items.splice(cart.items.indexOf(item), 1);
@@ -138,10 +160,10 @@ export class ShoppingCartService {
 
     // Emit an event for each product in the cart
     cart.items.forEach((item) => {
-      this.eventEmitter.emit('cart.product.removed', {
-        productId: item.product.toString(),
-        quantity: item.quantity,
-      });
+      this.updateProductQuantityRemoveHelper(
+        item.product.toString(),
+        item.quantity,
+      );
     });
     return cart;
   }
