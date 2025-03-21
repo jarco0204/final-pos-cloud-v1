@@ -43,47 +43,28 @@ export class ShoppingCartService {
     const existingIndex = cart.items.findIndex(
       (item) => item.product.toString() === productObjectId.toString(),
     );
-    if (existingIndex !== -1) {
-      this.updateProductQuantityHelper(
-        productObjectId.toString(),
-        cartItemDto.quantity,
-      );
 
-      // Increase the quantity
+    let quantityDifference = cartItemDto.quantity; // assume full quantity if adding new
+
+    if (existingIndex !== -1) {
+      // If product already exists, calculate the additional quantity to add.
+      quantityDifference = cartItemDto.quantity;
       cart.items[existingIndex].quantity += cartItemDto.quantity;
     } else {
-      this.updateProductQuantityHelper(productObjectId.toString(), 1);
-      // Add new product to cart
+      // If new product, push it and the quantityDifference remains as provided.
       cart.items.push({
         product: productObjectId,
         quantity: cartItemDto.quantity,
       });
     }
+
+    // Emit the unified stock update event.
+    this.updateProductStockHelper(
+      productObjectId.toString(),
+      quantityDifference,
+    );
+
     return cart.save();
-  }
-
-  // Helper Method to Reduce Code Duplication & Emit Add Event
-  updateProductQuantityHelper(productID: string, quantity: number) {
-    try {
-      this.eventEmitter.emit('cart.product.added', {
-        productID,
-        quantity,
-      });
-    } catch (error) {
-      console.log('Error in event emitter', error);
-    }
-  }
-
-  // Helper Method to Reduce Code Duplication & Emit Remove Event
-  updateProductQuantityRemoveHelper(productID: string, quantity: number) {
-    try {
-      this.eventEmitter.emit('cart.product.removed', {
-        productID,
-        quantity,
-      });
-    } catch (error) {
-      console.log('Error in event emitter', error);
-    }
   }
 
   // Update the quantity of a product in the cart
@@ -93,7 +74,6 @@ export class ShoppingCartService {
   ): Promise<ShoppingCartDocument> {
     const cart = await this.getCart(cartId);
     const productObjectId = new Types.ObjectId(cartItemDto.product);
-    console.log('Your cart items are...', cart.items);
     const index = cart.items.findIndex(
       (item) => item.product._id.toString() === productObjectId.toString(),
     );
@@ -103,24 +83,33 @@ export class ShoppingCartService {
       );
     }
 
-    // Emit the event to update the product quantity
     const currentQuantity = cart.items[index].quantity;
     const newQuantity = cartItemDto.quantity;
     const quantityDifference = newQuantity - currentQuantity;
-    if (quantityDifference > 0) {
-      this.updateProductQuantityHelper(
-        productObjectId.toString(),
-        quantityDifference,
-      );
-    } else if (quantityDifference < 0) {
-      this.updateProductQuantityRemoveHelper(
-        productObjectId.toString(),
-        Math.abs(quantityDifference),
-      );
-    }
 
-    cart.items[index].quantity = cartItemDto.quantity;
-    return cart.save();
+    // Update the cart's quantity
+    cart.items[index].quantity = newQuantity;
+    const savedCart = await cart.save();
+
+    // Emit a unified event with the quantity difference.
+    this.updateProductStockHelper(
+      productObjectId.toString(),
+      quantityDifference,
+    );
+
+    return savedCart;
+  }
+
+  // Helper Method to Reduce Code Duplication & Emit Add Event
+  updateProductStockHelper(productId: string, quantityDifference: number) {
+    try {
+      this.eventEmitter.emit('cart.product.updated', {
+        productId,
+        quantityDifference,
+      });
+    } catch (error) {
+      console.error('Error emitting stock update event:', error);
+    }
   }
 
   // Delete a product from the cart
@@ -130,7 +119,6 @@ export class ShoppingCartService {
   ): Promise<ShoppingCartDocument> {
     const cart = await this.getCart(cartId);
     const productObjectId = new Types.ObjectId(productId);
-    // Find the product and determine how many units are being removed
     const item = cart.items.find(
       (item) => item.product._id.toString() === productObjectId.toString(),
     );
@@ -140,11 +128,8 @@ export class ShoppingCartService {
       );
     }
 
-    // Emit an event indicating that units are being removed (stock should be increased)
-    this.updateProductQuantityRemoveHelper(
-      productObjectId.toString(),
-      item.quantity,
-    );
+    // Emit the unified event with negative quantity (indicating removal)
+    this.updateProductStockHelper(productObjectId.toString(), -item.quantity);
 
     // Remove the product from the cart
     cart.items.splice(cart.items.indexOf(item), 1);
@@ -158,12 +143,9 @@ export class ShoppingCartService {
       throw new NotFoundException(`Cart with id ${cartId} not found`);
     }
 
-    // Emit an event for each product in the cart
     cart.items.forEach((item) => {
-      this.updateProductQuantityRemoveHelper(
-        item.product.toString(),
-        item.quantity,
-      );
+      // Emit a negative quantity for each removed item
+      this.updateProductStockHelper(item.product.toString(), -item.quantity);
     });
     return cart;
   }
