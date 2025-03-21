@@ -1,5 +1,5 @@
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { Connection, Model } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -7,31 +7,62 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product, ProductDocument } from 'src/schemas/Product';
 import { CreateProductDto } from './validators/create-product-dto';
 import { UpdateProductDto } from './validators/update-product-dto';
+import { MongooseLogicalSessionService } from '../mongoose-logical-session/mongoose-logical-session.service';
 
 @Injectable()
 export class ProductService {
   constructor(
+    @InjectConnection() private readonly connection: Connection,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+    private readonly logicalSessionService: MongooseLogicalSessionService,
   ) {}
 
   // Listener for when products are added to the cart
-  @OnEvent('cart.product.updated')
+  @OnEvent('cart.product.updated', { async: true })
   async handleCartProductUpdated(payload: {
     productId: string;
     quantityDifference: number;
     logicalSessionID: string;
-  }) {
+  }): Promise<void> {
+    const session = await this.connection.startSession();
+    session.startTransaction();
     try {
-      // If quantityDifference is positive, reduce stock; if negative, increase stock.
-      await this.productModel.findByIdAndUpdate(payload.productId, {
-        $inc: { stock: -payload.quantityDifference },
-      });
+      // Update product stock within the Mongoose session.
+      const updated = await this.productModel
+        .findByIdAndUpdate(
+          payload.productId,
+          { $inc: { stock: -payload.quantityDifference } },
+          { session },
+        )
+        .exec();
+
+      if (!updated) {
+        throw new NotFoundException(
+          `Product with id ${payload.productId} not found`,
+        );
+      }
+
+      // If update succeeds, mark the logical session as 'committed'
+      await this.logicalSessionService.updateLogicalSessionStatus(
+        payload.logicalSessionID,
+        'committed',
+      );
+
+      await session.commitTransaction();
     } catch (error) {
+      await session.abortTransaction();
       console.error(
         `Failed to update stock for product ${payload.productId}:`,
         error,
       );
-      throw error; // This will cause emitAsync to reject
+      // Optionally mark the logical session as 'rolled_back'
+      await this.logicalSessionService.updateLogicalSessionStatus(
+        payload.logicalSessionID,
+        'rolled_back',
+      );
+      throw error; // Propagate the error to be handled by emitAsync caller if needed
+    } finally {
+      void session.endSession();
     }
   }
 
