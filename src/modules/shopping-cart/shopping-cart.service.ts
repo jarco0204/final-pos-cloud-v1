@@ -1,4 +1,4 @@
-import { Model, Types } from 'mongoose';
+import { Connection, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -6,6 +6,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 // Local Imports
 import { CartItemDto } from './validators/create-shopping-cart-item.dto';
 import { ShoppingCart, ShoppingCartDocument } from '../../schemas/ShoppingCart';
+import { MongooseLogicalSessionService } from '../mongoose-logical-session/mongoose-logical-session.service';
 
 @Injectable()
 export class ShoppingCartService {
@@ -13,6 +14,8 @@ export class ShoppingCartService {
     @InjectModel(ShoppingCart.name)
     private cartModel: Model<ShoppingCartDocument>,
     private eventEmitter: EventEmitter2,
+    private readonly connection: Connection,
+    private logicalSessionService: MongooseLogicalSessionService,
   ) {}
 
   // Create a new shopping cart
@@ -38,33 +41,56 @@ export class ShoppingCartService {
     cartId: string,
     cartItemDto: CartItemDto,
   ): Promise<ShoppingCartDocument> {
-    const cart = await this.getCart(cartId);
-    const productObjectId = new Types.ObjectId(cartItemDto.product);
-    const existingIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productObjectId.toString(),
-    );
+    // Start a Mongoose session and begin a transaction
+    const session = await this.connection.startSession();
+    session.startTransaction();
 
-    let quantityDifference = cartItemDto.quantity; // assume full quantity if adding new
+    try {
+      // Retrieve the cart within the session context
+      const cart = await this.getCart(cartId); // TODO_J: Add logicalSessionID
+      const productObjectId = new Types.ObjectId(cartItemDto.product);
+      const existingIndex = cart.items.findIndex(
+        (item) => item.product.toString() === productObjectId.toString(),
+      );
 
-    if (existingIndex !== -1) {
-      // If product already exists, calculate the additional quantity to add.
-      quantityDifference = cartItemDto.quantity;
-      cart.items[existingIndex].quantity += cartItemDto.quantity;
-    } else {
-      // If new product, push it and the quantityDifference remains as provided.
-      cart.items.push({
-        product: productObjectId,
-        quantity: cartItemDto.quantity,
-      });
+      let quantityDifference = cartItemDto.quantity; // assume full quantity if adding new
+
+      if (existingIndex !== -1) {
+        // If product already exists, calculate the additional quantity to add.
+        quantityDifference = cartItemDto.quantity;
+        cart.items[existingIndex].quantity += cartItemDto.quantity;
+      } else {
+        // If new product, push it and the quantityDifference remains as provided.
+        cart.items.push({
+          product: productObjectId,
+          quantity: cartItemDto.quantity,
+        });
+      }
+
+      // Create a logical session record for this group of operations.
+      const logicalSession =
+        await this.logicalSessionService.createLogicalSession(60);
+
+      // Emit the unified stock update event including the logical session ID
+      await this.updateProductStockHelper(
+        productObjectId.toString(),
+        quantityDifference,
+        logicalSession?._id?.toString() || '111',
+      );
+
+      // Save the cart within the session
+      const savedCart = await cart.save({ session });
+
+      // Commit the transaction
+      await session.commitTransaction();
+      return savedCart;
+    } catch (error) {
+      // Rollback the transaction in case of error
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      void session.endSession();
     }
-
-    // Emit the unified stock update event.
-    this.updateProductStockHelper(
-      productObjectId.toString(),
-      quantityDifference,
-    );
-
-    return cart.save();
   }
 
   // Update the quantity of a product in the cart
@@ -92,7 +118,7 @@ export class ShoppingCartService {
     const savedCart = await cart.save();
 
     // Emit a unified event with the quantity difference.
-    this.updateProductStockHelper(
+    await this.updateProductStockHelper(
       productObjectId.toString(),
       quantityDifference,
     );
@@ -101,14 +127,20 @@ export class ShoppingCartService {
   }
 
   // Helper Method to Reduce Code Duplication & Emit Add Event
-  updateProductStockHelper(productId: string, quantityDifference: number) {
+  async updateProductStockHelper(
+    productId: string,
+    quantityDifference: number,
+    logicalSessionID: string = '111',
+  ): Promise<void> {
     try {
-      this.eventEmitter.emit('cart.product.updated', {
+      await this.eventEmitter.emitAsync('cart.product.updated', {
         productId,
         quantityDifference,
+        logicalSessionID,
       });
     } catch (error) {
       console.error('Error emitting stock update event:', error);
+      throw error;
     }
   }
 
@@ -129,7 +161,10 @@ export class ShoppingCartService {
     }
 
     // Emit the unified event with negative quantity (indicating removal)
-    this.updateProductStockHelper(productObjectId.toString(), -item.quantity);
+    await this.updateProductStockHelper(
+      productObjectId.toString(),
+      -item.quantity,
+    );
 
     // Remove the product from the cart
     cart.items.splice(cart.items.indexOf(item), 1);
@@ -143,10 +178,13 @@ export class ShoppingCartService {
       throw new NotFoundException(`Cart with id ${cartId} not found`);
     }
 
-    cart.items.forEach((item) => {
+    for (const item of cart.items) {
       // Emit a negative quantity for each removed item
-      this.updateProductStockHelper(item.product.toString(), -item.quantity);
-    });
+      await this.updateProductStockHelper(
+        item.product.toString(),
+        -item.quantity,
+      );
+    }
     return cart;
   }
 }

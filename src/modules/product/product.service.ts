@@ -19,6 +19,7 @@ export class ProductService {
   async handleCartProductUpdated(payload: {
     productId: string;
     quantityDifference: number;
+    logicalSessionID: string;
   }) {
     try {
       // If quantityDifference is positive, reduce stock; if negative, increase stock.
@@ -30,7 +31,7 @@ export class ProductService {
         `Failed to update stock for product ${payload.productId}:`,
         error,
       );
-      // Optionally, implement retry or compensation logic here.
+      throw error; // This will cause emitAsync to reject
     }
   }
 
