@@ -34,7 +34,7 @@ export class ShoppingCartService {
   }
 
   // Add or update a product in the cart
-  async addOrUpdateProduct(
+  async addProduct(
     cartId: string,
     cartItemDto: CartItemDto,
   ): Promise<ShoppingCartDocument> {

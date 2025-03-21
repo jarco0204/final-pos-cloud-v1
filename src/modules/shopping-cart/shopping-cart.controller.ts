@@ -26,22 +26,12 @@ export class ShoppingCartController {
     return this.cartService.getCart(id);
   }
 
-  // Add or update a product
-  @Post(':id/product')
-  async addOrUpdateProduct(
-    @Param('id') cartId: string,
-    @Body() cartItemDto: CartItemDto,
-  ) {
-    return this.cartService.addOrUpdateProduct(cartId, cartItemDto);
-  }
-
   @Put(':id/product')
-  async updateProductQuantity(
+  async addProduct(
     @Param('id') cartId: string,
     @Body() cartItemDto: CartItemDto,
   ) {
-    console.log('Your cart id is...', cartId, cartItemDto);
-    return this.cartService.updateProductQuantity(cartId, cartItemDto);
+    return this.cartService.addProduct(cartId, cartItemDto);
   }
 
   @Delete(':id/product/:productId')
@@ -51,6 +41,31 @@ export class ShoppingCartController {
   ) {
     return this.cartService.deleteProduct(cartId, productId);
   }
+
+  // Add or update a product
+  // @Post(':id/product/:productId')
+  // async updateProductQuantity(
+  //   @Param('id') cartId: string,
+  //   @Body() cartItemDto: CartItemDto,
+  // ) {
+  //   return this.cartService.addOrUpdateProduct(cartId, cartItemDto);
+  // }
+
+  // @Put(':id/product')
+  // async updateProductQuantity(
+  //   @Param('id') cartId: string,
+  //   @Body() cartItemDto: CartItemDto,
+  // ) {
+  //   return this.cartService.updateProductQuantity(cartId, cartItemDto);
+  // }
+
+  // @Delete(':id/product/:productId')
+  // async deleteProduct(
+  //   @Param('id') cartId: string,
+  //   @Param('productId') productId: string,
+  // ) {
+  //   return this.cartService.deleteProduct(cartId, productId);
+  // }
 
   @Delete(':id')
   async deleteCart(@Param('id') id: string) {
