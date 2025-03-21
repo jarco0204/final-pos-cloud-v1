@@ -15,46 +15,22 @@ export class ProductService {
   ) {}
 
   // Listener for when products are added to the cart
-  @OnEvent('cart.product.added')
-  async handleProductAdded(payload: { productId: string; quantity: number }) {
+  @OnEvent('cart.product.updated')
+  async handleCartProductUpdated(payload: {
+    productId: string;
+    quantityDifference: number;
+  }) {
     try {
-      const product = await this.productModel
-        .findById(payload.productId)
-        .exec();
-      if (!product) {
-        throw new NotFoundException(
-          `Product with id ${payload.productId} not found`,
-        );
-      }
-      const newStock = product.stock - payload.quantity;
-      if (newStock < 0) {
-        throw new Error('Insufficient stock');
-      }
+      // If quantityDifference is positive, reduce stock; if negative, increase stock.
       await this.productModel.findByIdAndUpdate(payload.productId, {
-        $inc: { stock: -payload.quantity },
+        $inc: { stock: -payload.quantityDifference },
       });
     } catch (error) {
-      console.error('Error updating product stock:', error);
-    }
-  }
-
-  // Listener for when products are removed from the cart
-  @OnEvent('cart.product.removed')
-  async handleProductRemoved(payload: { productId: string; quantity: number }) {
-    try {
-      const product = await this.productModel
-        .findById(payload.productId)
-        .exec();
-      if (!product) {
-        throw new NotFoundException(
-          `Product with id ${payload.productId} not found`,
-        );
-      }
-      await this.productModel.findByIdAndUpdate(payload.productId, {
-        $inc: { stock: payload.quantity },
-      });
-    } catch (error) {
-      console.error('Error updating product stock:', error);
+      console.error(
+        `Failed to update stock for product ${payload.productId}:`,
+        error,
+      );
+      // Optionally, implement retry or compensation logic here.
     }
   }
 
