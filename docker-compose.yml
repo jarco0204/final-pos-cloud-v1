@@ -1,19 +1,19 @@
 services:
-  api:
+  api: # NestJS API Service
     build: .
     ports:
-      - '3000:3000'
+      - '3001:3001'
     depends_on:
       - mongo
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/nestjs-db
+      - MONGODB_URI=mongodb://mongo:27017/final-pos-cloud-v1
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     command: npm run start:dev
 
-  mongo:
-    image: mongo:4.4
+  mongo: # MongoDB Service
+    image: mongo:8.0
     restart: always
     ports:
       - '27017:27017'

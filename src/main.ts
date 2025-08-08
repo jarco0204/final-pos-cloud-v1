@@ -1,6 +1,10 @@
+import * as dotenv from 'dotenv';
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Configuration
 const config = new DocumentBuilder()
