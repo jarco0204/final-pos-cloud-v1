@@ -10,9 +10,12 @@ dotenv.config();
 const config = new DocumentBuilder()
   .setTitle('FinalPOS: Shop and Cart API')
   .setDescription(
-    'API documentation for backend coding task to create CRUD App for Shop and Cart',
+    'Complete API documentation for FinalPOS e-commerce backend. This API provides CRUD operations for products and shopping cart management.',
   )
   .setVersion('1.1.1')
+  .addTag('products', 'Product management endpoints')
+  .addTag('shopping-cart', 'Shopping cart management endpoints')
+  .addBearerAuth()
   .build();
 
 const PORT = process.env.PORT ?? 3000;
@@ -24,7 +27,7 @@ async function bootstrap() {
 
   // Swagger API Documentation
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
   await app.listen(process.env.PORT ?? PORT);
 }
 
