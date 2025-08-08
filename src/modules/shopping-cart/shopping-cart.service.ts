@@ -1,5 +1,5 @@
 import { Connection, Model, Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -14,6 +14,7 @@ export class ShoppingCartService {
     @InjectModel(ShoppingCart.name)
     private cartModel: Model<ShoppingCartDocument>,
     private eventEmitter: EventEmitter2,
+    @InjectConnection()
     private readonly connection: Connection,
     private logicalSessionService: MongooseLogicalSessionService,
   ) {}

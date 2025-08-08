@@ -9,7 +9,9 @@ describe('MongooseLogicalSessionService', () => {
       providers: [MongooseLogicalSessionService],
     }).compile();
 
-    service = module.get<MongooseLogicalSessionService>(MongooseLogicalSessionService);
+    service = module.get<MongooseLogicalSessionService>(
+      MongooseLogicalSessionService,
+    );
   });
 
   it('should be defined', () => {
