@@ -8,12 +8,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { ProductModule } from './modules/product/product.module';
-import { ShoppingCartModule } from './modules/shopping-cart/shopping-cart.module';
 
 @Module({
   imports: [
     ProductModule,
-    ShoppingCartModule,
     // Event-Emitter Module: Event-Driven Architecture
     EventEmitterModule.forRoot(),
 

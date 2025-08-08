@@ -7,14 +7,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product, ProductDocument } from 'src/schemas/Product';
 import { CreateProductDto } from './validators/create-product-dto';
 import { UpdateProductDto } from './validators/update-product-dto';
-import { MongooseLogicalSessionService } from '../mongoose-logical-session/mongoose-logical-session.service';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectConnection() private readonly connection: Connection,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
-    private readonly logicalSessionService: MongooseLogicalSessionService,
   ) {}
 
   // Listener for when products are added to the cart
@@ -43,10 +41,10 @@ export class ProductService {
       }
 
       // If update succeeds, mark the logical session as 'committed'
-      await this.logicalSessionService.updateLogicalSessionStatus(
-        payload.logicalSessionID,
-        'committed',
-      );
+      // await this.logicalSessionService.updateLogicalSessionStatus(
+      //   payload.logicalSessionID,
+      //   'committed',
+      // );
 
       await session.commitTransaction();
     } catch (error) {
@@ -56,10 +54,10 @@ export class ProductService {
         error,
       );
       // Optionally mark the logical session as 'rolled_back'
-      await this.logicalSessionService.updateLogicalSessionStatus(
-        payload.logicalSessionID,
-        'rolled_back',
-      );
+      // await this.logicalSessionService.updateLogicalSessionStatus(
+      //   payload.logicalSessionID,
+      //   'rolled_back',
+      // );
       throw error; // Propagate the error to be handled by emitAsync caller if needed
     } finally {
       void session.endSession();
