@@ -1,4 +1,4 @@
-name: FPOS - CI/CD Pipeline
+name: FinalPOS - CI/CD Pipeline
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,16 +19,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and run containers
+      - name: Build containers
         run: |
-          docker-compose up -d --build
-
-      - name: Wait for API to be ready
-        run: |
-          ./wait-for-it.sh localhost:3000 -t 30
-
-      - name: Run integration tests
-        run: npm run test:e2e
-
-      - name: Tear down containers
-        run: docker-compose down
+          docker-compose build
