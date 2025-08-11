@@ -1,8 +1,11 @@
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
+// Local imports
+import { BaseEntity } from './BaseEntity';
+
 @Schema({ collection: 'products' })
-export class Product {
+export class Product extends BaseEntity {
   @Prop({ required: true, maxlength: 64 })
   name: string;
 
